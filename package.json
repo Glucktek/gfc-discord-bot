@@ -1,0 +1,23 @@
+{
+  "name": "gfc-discord-bot",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node",
+    "start": "bun run ./dist/index.js",
+    "dev": "bun run ./src/index.ts"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@aws-sdk/client-lightsail": "^3.817.0",
+    "@aws-sdk/credential-providers": "^3.817.0",
+    "discord": "^0.8.2",
+    "discord.js": "^14.19.3"
+  }
+}
