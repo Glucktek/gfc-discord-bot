@@ -224,11 +224,3 @@ export class Bot {
     });
   }
 }
-
-// Usage example:
-// const bot = new Bot({
-//   token: process.env.DISCORD_TOKEN!,
-//   guildId: process.env.GUILD_ID!,
-//   adminRole: process.env.ADMIN_ROLE!
-// });
-// bot.start();
