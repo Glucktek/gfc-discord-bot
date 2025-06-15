@@ -124,7 +124,9 @@ const CreateBot = (config: BotConfig) => {
         switch (subcommand) {
           case "status":
             console.log("Status command received: Bot is running normally");
-            await interaction.reply("🟢 Bot is running normally!");
+            await interaction.reply(
+              "🟢 Bot is running normally! Nothing to see here.",
+            );
             break;
         }
       }
