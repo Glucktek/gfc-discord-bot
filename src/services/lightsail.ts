@@ -7,9 +7,16 @@ import {
 } from "@aws-sdk/client-lightsail";
 import { fromEnv } from "@aws-sdk/credential-providers";
 
+/*
+ * Leaving this file as a class.
+ * I wanted to see the structure of differnce of classes and functional programming
+ * Classes are nice and familiar, but functional programming is better and more modern.
+ * Classes are not needed in modern JavaScript/TypeScript.
+ */
 export class LightsailClient {
   private client: AwsLightsailClient;
 
+  // Constructor to initialize the AWS Lightsail client
   constructor(region: string = "us-east-1") {
     this.client = new AwsLightsailClient({
       region,
