@@ -1,16 +1,19 @@
-import { Bot } from "./services/bot.ts";
+import CreateBot from "./services/bot.ts";
 import { validateEnv } from "./env.ts";
+import type { BotConfig } from "./types.ts";
 
 async function main() {
   const env = validateEnv();
   console.log("Starting bot service...");
 
-  const bot = new Bot({
+  const botConfig: BotConfig = {
     token: env.discordToken,
     guildId: env.guildId,
     adminRole: env.adminRole,
-  });
-  bot.start();
+  };
+
+  const bot = CreateBot(botConfig);
+  bot.startBot();
 }
 
 main();

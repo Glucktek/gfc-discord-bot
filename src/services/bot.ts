@@ -7,80 +7,62 @@ import {
   Routes,
   ChatInputCommandInteraction,
 } from "discord.js";
-
-// You'll need to implement this based on your AWS SDK setup
 import { LightsailClient } from "./lightsail"; // Assuming you'll create this
 
-interface BotConfig {
-  token: string;
-  guildId: string;
-  adminRole: string;
-}
+import type { BotConfig } from "../types.ts";
 
-export class Bot {
-  private client: Client;
-  private token: string;
-  private guildId: string;
-  private adminRole: string;
-  private lightsailClient: LightsailClient;
+const CreateBot = (config: BotConfig) => {
+  const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+  });
 
-  constructor(config: BotConfig) {
-    this.client = new Client({
-      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
-    });
-    this.token = config.token;
-    this.guildId = config.guildId;
-    this.adminRole = config.adminRole;
-    this.lightsailClient = new LightsailClient();
-  }
+  const lightsailClient = new LightsailClient();
 
-  private hasRequiredRole(member: GuildMember): boolean {
-    return member.roles.cache.has(this.adminRole);
-  }
+  const hasRequiredRole = (member: GuildMember): boolean => {
+    return member.roles.cache.has(config.adminRole);
+  };
 
-  private getCommands() {
-    return [
-      new SlashCommandBuilder()
-        .setName("gfcbot")
-        .setDescription("GFC Bot commands")
-        .addSubcommandGroup((group) =>
-          group
-            .setName("server")
-            .setDescription("Manage the server")
-            .addSubcommand((subcommand) =>
-              subcommand.setName("start").setDescription("Start the server"),
-            )
-            .addSubcommand((subcommand) =>
-              subcommand.setName("stop").setDescription("Stop the server"),
-            )
-            .addSubcommand((subcommand) =>
-              subcommand.setName("reboot").setDescription("Reboot the server"),
-            )
-            .addSubcommand((subcommand) =>
-              subcommand.setName("status").setDescription("Get server status"),
-            )
-            .addSubcommand((subcommand) =>
-              subcommand
-                .setName("check-website")
-                .setDescription(
-                  "Check if the website is returning a 200 success code",
-                ),
-            ),
-        )
-        .addSubcommandGroup((group) =>
-          group
-            .setName("bot")
-            .setDescription("Bot management commands")
-            .addSubcommand((subcommand) =>
-              subcommand.setName("status").setDescription("Check bot status"),
-            ),
-        ),
-    ];
-  }
+  const getCommands = () => [
+    new SlashCommandBuilder()
+      .setName("gfcbot")
+      .setDescription("GFC Bot commands")
+      .addSubcommandGroup((group) =>
+        group
+          .setName("server")
+          .setDescription("Manage the server")
+          .addSubcommand((subcommand) =>
+            subcommand.setName("start").setDescription("Start the server"),
+          )
+          .addSubcommand((subcommand) =>
+            subcommand.setName("stop").setDescription("Stop the server"),
+          )
+          .addSubcommand((subcommand) =>
+            subcommand.setName("reboot").setDescription("Reboot the server"),
+          )
+          .addSubcommand((subcommand) =>
+            subcommand.setName("status").setDescription("Get server status"),
+          )
+          .addSubcommand((subcommand) =>
+            subcommand
+              .setName("check-website")
+              .setDescription(
+                "Check if the website is returning a 200 success code",
+              ),
+          ),
+      )
+      .addSubcommandGroup((group) =>
+        group
+          .setName("bot")
+          .setDescription("Bot management commands")
+          .addSubcommand((subcommand) =>
+            subcommand.setName("status").setDescription("Check bot status"),
+          ),
+      ),
+  ];
 
-  private async handleCommands(
+  const handleCommands = async (
     interaction: ChatInputCommandInteraction,
-  ): Promise<void> {
+  ): Promise<void> => {
     if (!interaction.member || !(interaction.member instanceof GuildMember)) {
       await interaction.reply({
         content: "🚫 Unable to verify your permissions!",
@@ -89,7 +71,7 @@ export class Bot {
       return;
     }
 
-    if (!this.hasRequiredRole(interaction.member)) {
+    if (!hasRequiredRole(interaction.member)) {
       await interaction.reply({
         content: "🚫 You need the required role to use this bot!",
         ephemeral: true,
@@ -106,7 +88,7 @@ export class Bot {
         switch (subcommand) {
           case "start":
             console.log("Start command received");
-            await this.lightsailClient.startInstance(instanceName);
+            await lightsailClient.startInstance(instanceName);
             await interaction.reply(
               "✅ Server start command successfully sent!",
             );
@@ -114,7 +96,7 @@ export class Bot {
 
           case "stop":
             console.log("Stop command received");
-            await this.lightsailClient.stopInstance(instanceName);
+            await lightsailClient.stopInstance(instanceName);
             await interaction.reply(
               "✅ Server stop command successfully sent, Please wait 5 minutes!",
             );
@@ -122,7 +104,7 @@ export class Bot {
 
           case "reboot":
             console.log("Reboot command received");
-            await this.lightsailClient.rebootInstance(instanceName);
+            await lightsailClient.rebootInstance(instanceName);
             await interaction.reply(
               "✅ Server rebooted successfully, please wait 5 mins and check status again!",
             );
@@ -130,13 +112,12 @@ export class Bot {
 
           case "status":
             console.log("Status command received");
-            const state =
-              await this.lightsailClient.getInstanceState(instanceName);
+            const state = await lightsailClient.getInstanceState(instanceName);
             await interaction.reply(`Current Instance state: ${state}`);
             break;
 
           case "check-website":
-            await this.checkWebsite(interaction);
+            await checkWebsite(interaction);
             break;
         }
       } else if (group === "bot") {
@@ -153,11 +134,11 @@ export class Bot {
         error instanceof Error ? error.message : "Unknown error";
       await interaction.reply(`❌ Command failed: ${errorMessage}`);
     }
-  }
+  };
 
-  private async checkWebsite(
+  const checkWebsite = async (
     interaction: ChatInputCommandInteraction,
-  ): Promise<void> {
+  ): Promise<void> => {
     console.log("Check website command received");
     const websiteURL = "https://greaterfaithchurch.org";
 
@@ -180,47 +161,53 @@ export class Bot {
         `❌ Failed to reach the website: \n${errorMessage}`,
       );
     }
-  }
+  };
 
-  private async registerCommands(): Promise<void> {
-    const rest = new REST().setToken(this.token);
-    const commands = this.getCommands().map((command) => command.toJSON());
+  const registerCommands = async (): Promise<void> => {
+    const rest = new REST().setToken(config.token);
+    const commands = getCommands().map((command) => command.toJSON());
 
     await rest.put(
-      Routes.applicationGuildCommands(this.client.user!.id, this.guildId),
+      Routes.applicationGuildCommands(client.user!.id, config.guildId),
       { body: commands },
     );
-  }
+  };
 
-  private async removeCommands(): Promise<void> {
-    const rest = new REST().setToken(this.token);
+  const removeCommands = async (): Promise<void> => {
+    const rest = new REST().setToken(config.token);
 
     await rest.put(
-      Routes.applicationGuildCommands(this.client.user!.id, this.guildId),
+      Routes.applicationGuildCommands(client.user!.id, config.guildId),
       { body: [] },
     );
-  }
+  };
 
-  public async start(): Promise<void> {
-    this.client.on("interactionCreate", async (interaction) => {
+  const startBot = async (): Promise<void> => {
+    client.on("interactionCreate", async (interaction) => {
       if (!interaction.isChatInputCommand()) return;
-      await this.handleCommands(interaction);
+      await handleCommands(interaction);
     });
 
-    await this.client.login(this.token);
-    await this.registerCommands();
+    await client.login(config.token);
+    await registerCommands();
 
     console.log("Bot is running. Press CTRL+C to exit.");
 
     process.on("SIGINT", async () => {
       console.log("Shutting down...");
       try {
-        await this.removeCommands();
+        await removeCommands();
       } catch (error) {
         console.error("Error removing commands:", error);
       }
-      await this.client.destroy();
+      await client.destroy();
       process.exit(0);
     });
-  }
-}
+  };
+
+  return {
+    startBot,
+  };
+};
+
+export default CreateBot;
